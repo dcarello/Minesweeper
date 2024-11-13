@@ -98,7 +98,7 @@ public class DCPolygonRenderer extends slRenderEngine{
     } // public void render(...)
 
     public void render(int FRAME_DELAY_INPUT, int NUM_ROWS, int NUM_COLS, DCPingPong myPingPong){
-        C_RADIUS = radiusFinder(NUM_ROWS, NUM_COLS) * 1.7f;
+        C_RADIUS = radiusFinder(NUM_ROWS, NUM_COLS) * 1.9f;
         MAX_POLYGONS = numPolygons(NUM_ROWS, NUM_COLS);
         FRAME_DELAY = FRAME_DELAY_INPUT;
 

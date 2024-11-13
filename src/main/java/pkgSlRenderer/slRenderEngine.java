@@ -1,11 +1,15 @@
 package pkgSlRenderer;
 
+import org.lwjgl.BufferUtils;
 import pkgPingPong.DCPingPong;
 import pkgSlUtils.slWindowManager;
 import java.util.Random;
 import org.lwjgl.opengl.*;
+import java.nio.*;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL15.*;
 
 public abstract class slRenderEngine {
     protected final int NUM_RGBA = 4;
@@ -27,17 +31,40 @@ public abstract class slRenderEngine {
     public abstract void render();
     public abstract void render(int FRAME_DELAY, int NUM_ROWS, int NUM_COLS, DCPingPong myPingPong);
 
-        public void initOpenGL(slWindowManager my_wm){
-            my_wm.setKeyCallback();
 
-            my_wm.updateContextToThis();
+    public void initOpenGL(int NUM_ROWS, int NUM_COLS, slWindowManager my_wm){
+        my_wm.setKeyCallback();
+        my_wm.updateContextToThis();
+        GL.createCapabilities();
+        glClear(GL_COLOR_BUFFER_BIT);
 
-            GL.createCapabilities();
+        int FPP = 4;
 
-            my_wm.enableResizeWindowCallback();
+        // New Stuff
+        // vertex buffer data
+        float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
+        FloatBuffer myFB = BufferUtils.createFloatBuffer(my_v.length);
+        myFB.put(my_v).flip();
+        // vertex array
+        int vaoID = glGenVertexArrays();
+        glBindVertexArray(vaoID);
+        // vertex buffer object
+        int vboID = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        glBufferData(GL_ARRAY_BUFFER, myFB, GL_STATIC_DRAW);
+        // Attributes
+        int loc0 = 0, loc1 = 1, positionStride = 3, vertexStride = 5, tstride = 4;
+        glVertexAttribPointer(loc0, positionStride, GL_FLOAT, false, vertexStride, 0);
+        glVertexAttribPointer(loc1, tstride, GL_FLOAT, false, vertexStride, positionStride);
+        // Shader Object
+        String vertexShaderString;
+        String fragmentShaderString;
+        DCShaderObject my_so = new DCShaderObject("vs_texture_1.glsl", "fs_texture_1.glsl");
 
-            float CC_RED = 0.0f, CC_GREEN = 0.0f, CC_BLUE = 1.0f, CC_ALPHA = 1.0f;
-            glClearColor(CC_RED, CC_GREEN, CC_BLUE, CC_ALPHA);
+        my_wm.enableResizeWindowCallback();
+
+        float CC_RED = 0.0f, CC_GREEN = 0.0f, CC_BLUE = 1.0f, CC_ALPHA = 1.0f;
+        glClearColor(CC_RED, CC_GREEN, CC_BLUE, CC_ALPHA);
     }
 
     protected void updateRandVerticesRandColors(){
