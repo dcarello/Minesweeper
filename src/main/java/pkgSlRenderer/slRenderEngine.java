@@ -9,7 +9,6 @@ import java.nio.*;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL15.*;
 
 public abstract class slRenderEngine {
     protected final int NUM_RGBA = 4;
@@ -38,9 +37,8 @@ public abstract class slRenderEngine {
         GL.createCapabilities();
         glClear(GL_COLOR_BUFFER_BIT);
 
-        int FPP = 4;
-
         // New Stuff
+        int FPP = 4;
         // vertex buffer data
         float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
         FloatBuffer myFB = BufferUtils.createFloatBuffer(my_v.length);
@@ -57,13 +55,19 @@ public abstract class slRenderEngine {
         glVertexAttribPointer(loc0, positionStride, GL_FLOAT, false, vertexStride, 0);
         glVertexAttribPointer(loc1, tstride, GL_FLOAT, false, vertexStride, positionStride);
         // Shader Object
-        String vertexShaderString;
-        String fragmentShaderString;
-        DCShaderObject my_so = new DCShaderObject("vs_texture_1.glsl", "fs_texture_1.glsl");
+        DCShaderObject my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_1.glsl");
+        my_so.compileShader();
+        my_so.setShaderProgram();
+        // Camera Object
+        DCCamera my_c = new DCCamera();
+        my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix()); // TODO
+        my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix()); // TODO
+
+        // End of New Stuff
 
         my_wm.enableResizeWindowCallback();
 
-        float CC_RED = 0.0f, CC_GREEN = 0.0f, CC_BLUE = 1.0f, CC_ALPHA = 1.0f;
+        float CC_RED = 0.0f, CC_GREEN = 0.0f, CC_BLUE = 0.0f, CC_ALPHA = 1.0f;
         glClearColor(CC_RED, CC_GREEN, CC_BLUE, CC_ALPHA);
     }
 

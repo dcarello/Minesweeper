@@ -3,7 +3,15 @@ package pkgSlRenderer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
+import org.lwjgl.BufferUtils.*;
+import org.lwjgl.opengl.GL30.*;
+import java.nio.IntBuffer.*;
+import java.nio.*;
+import static org.lwjgl.opengl.GL33.*;
+
 import java.util.Random;
+
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 import pkgKeyListener.DCKeyListener;
 import pkgPingPong.DCPingPong;
@@ -16,6 +24,11 @@ public class DCPolygonRenderer extends slRenderEngine{
     private int NUM_ROWS;
     private int NUM_COLS;
     private int FRAME_DELAY;
+
+    private int eboID;
+    private int VPT = 4;
+    private int[] rgVertexIndices;
+    private IntBuffer VertexIndicesBuffer;
 
     // Thread to handle Interactive controls
     private void startInteractiveThread(DCPingPong myPingPong){
@@ -102,9 +115,6 @@ public class DCPolygonRenderer extends slRenderEngine{
         MAX_POLYGONS = numPolygons(NUM_ROWS, NUM_COLS);
         FRAME_DELAY = FRAME_DELAY_INPUT;
 
-        float spacingX = 2.0f / NUM_COLS;
-        float spacingY = 2.0f / NUM_ROWS;
-
         initializeArrays();
         findCenterCoords(NUM_COLS);
 
@@ -115,6 +125,7 @@ public class DCPolygonRenderer extends slRenderEngine{
 
             glfwPollEvents();
 
+            glClearColor(0.0f, 0.0f, 1.0f, 1.0f); // Set the clear color to blue
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (FRAME_DELAY != 0){
@@ -124,20 +135,32 @@ public class DCPolygonRenderer extends slRenderEngine{
             // Loop through rows and columns to draw each square
             for (int row = 0; row < NUM_ROWS; row++) {
                 for (int col = 0; col < NUM_COLS; col++) {
-                    float x = -1.0f + col * spacingX + spacingX / 2;
-                    float y = 1.0f - row * spacingY - spacingY / 2;
 
-                    boolean alive;
-                    myPingPong.nextNearestNeighbor(row, col);
-                    alive = myPingPong.get(row, col) == 1;
-                    drawSquare(x, y, C_RADIUS, alive);
+                    renderTile(row, col);
                 }
             }
-            myPingPong.swapBuffer();
             my_wm.swapBuffers();
         } // while (!my_wm.isGlfwWindowClosed())
         my_wm.destroyGlfwWindow();
     }
+
+//    Render the particular tile
+    public void renderTile(int row, int col) {
+        // Compute the vertexArray offset
+        int va_offset = getVAVIndex(row, col); // vertex array offset of tile
+        rgVertexIndices = new int[] {va_offset, va_offset+1, va_offset+2, va_offset, va_offset+2, va_offset+3};
+        VertexIndicesBuffer = BufferUtils.createIntBuffer(rgVertexIndices.length);
+        VertexIndicesBuffer.put(rgVertexIndices).flip();
+        eboID = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, VertexIndicesBuffer, GL_STATIC_DRAW);
+        glDrawElements(GL_TRIANGLES, rgVertexIndices.length, GL_UNSIGNED_INT, 0);
+    } // public void renderTile(...)
+
+    private int getVAVIndex(int row, int col){
+        return (row  * NUM_COLS  + col) * VPT;
+    }
+
 
     private void drawSquare(float x, float y, float size, boolean alive) {
         glBegin(GL_TRIANGLES);
@@ -158,6 +181,7 @@ public class DCPolygonRenderer extends slRenderEngine{
         glVertex2f(x - size / 2, y - size / 2);   // Bottom-left
         glEnd();
     }
+
 
     // Initializes the arrays for random colors, and the coordinates
     private void initializeArrays(){

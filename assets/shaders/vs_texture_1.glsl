@@ -7,6 +7,8 @@ layout (location=1) in vec2 aTexCoords;
 uniform mat4 uProjMatrix;
 uniform mat4 uViewMatrix;
 
+out vec2 fTexCoords;  // Declare the output variable for texture coordinates
+
 void main()
 {
     fTexCoords = aTexCoords;
