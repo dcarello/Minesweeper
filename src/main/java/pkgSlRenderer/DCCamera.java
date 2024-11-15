@@ -26,15 +26,13 @@ public class DCCamera {
     }
 
     public Matrix4f getProjectionMatrix(){
-
-        float zNear = 0f, zFar = 100f;
+        float zNear = 0f, zFar = 100f, screen_left = -1.0f, screen_right = 1.0f, screen_bottom = -1.0f, screen_top = 1.0f;
 
         Matrix4f projMatrix = new Matrix4f();
         projMatrix.identity();
-//        projMatrix.ortho(screen_left, screen_right, screen_bottom, screen_top, zNear, zFar);
+        projMatrix.ortho(screen_left, screen_right, screen_bottom, screen_top, zNear, zFar);
 
         return projMatrix;
-
     }
 
 }

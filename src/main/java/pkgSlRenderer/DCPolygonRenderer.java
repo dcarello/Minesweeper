@@ -3,6 +3,8 @@ package pkgSlRenderer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
+
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils.*;
 import org.lwjgl.opengl.GL30.*;
 import java.nio.IntBuffer.*;
@@ -115,8 +117,11 @@ public class DCPolygonRenderer extends slRenderEngine{
         MAX_POLYGONS = numPolygons(NUM_ROWS, NUM_COLS);
         FRAME_DELAY = FRAME_DELAY_INPUT;
 
+        Vector4f COLOR_FACTOR = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
+
         initializeArrays();
         findCenterCoords(NUM_COLS);
+
 
         startInteractiveThread(myPingPong);
 
@@ -128,6 +133,9 @@ public class DCPolygonRenderer extends slRenderEngine{
             glClearColor(0.0f, 0.0f, 1.0f, 1.0f); // Set the clear color to blue
             glClear(GL_COLOR_BUFFER_BIT);
 
+            my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix());
+            my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix());
+
             if (FRAME_DELAY != 0){
                 Delay(FRAME_DELAY);
             }
@@ -135,7 +143,7 @@ public class DCPolygonRenderer extends slRenderEngine{
             // Loop through rows and columns to draw each square
             for (int row = 0; row < NUM_ROWS; row++) {
                 for (int col = 0; col < NUM_COLS; col++) {
-
+                    my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                     renderTile(row, col);
                 }
             }
@@ -144,7 +152,8 @@ public class DCPolygonRenderer extends slRenderEngine{
         my_wm.destroyGlfwWindow();
     }
 
-//    Render the particular tile
+
+    //    Render the particular tile
     public void renderTile(int row, int col) {
         // Compute the vertexArray offset
         int va_offset = getVAVIndex(row, col); // vertex array offset of tile

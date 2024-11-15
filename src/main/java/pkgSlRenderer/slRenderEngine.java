@@ -24,6 +24,11 @@ public abstract class slRenderEngine {
     protected final slWindowManager my_wm = slWindowManager.get();
     Random my_rand = new Random();
 
+    // New Pipeline Variables
+    protected DCShaderObject my_so;
+    protected DCCamera my_c;
+    protected int vaoID, vboID;
+
     // Extended Class Functions
     public abstract void render(int FRAME_DELAY, int NUM_ROWS, int NUM_COLS);
     public abstract void render(float RADIUS);
@@ -40,28 +45,64 @@ public abstract class slRenderEngine {
         // New Stuff
         int FPP = 4;
         // vertex buffer data
-        float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
+//        float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
+//        float[] my_v = {
+//                // Position            // Texture coordinates
+//                -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, // Bottom Left
+//                0.5f, -0.5f, 0.0f,      1.0f, 0.0f, // Bottom Right
+//                0.5f, 0.5f, 0.0f,       1.0f, 1.0f, // Top Right
+//                -0.5f, 0.5f, 0.0f,      0.0f, 1.0f, // Top Left
+//        };
+        float[] my_v = {
+                // Tile (0, 0)
+                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
+                0.5f, -0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
+                0.5f,  0.5f, 0.0f, 1.0f, 1.0f,   // Top-right
+                -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,   // Top-left
+
+                // Tile (0, 1)
+                0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
+                1.5f, -0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
+                1.5f,  0.5f, 0.0f, 1.0f, 1.0f,   // Top-right
+                0.5f,  0.5f, 0.0f, 0.0f, 1.0f,   // Top-left
+
+                // Tile (1, 0)
+                -0.5f,  0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
+                0.5f,  0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
+                0.5f,  1.5f, 0.0f, 1.0f, 1.0f,   // Top-right
+                -0.5f,  1.5f, 0.0f, 0.0f, 1.0f,   // Top-left
+
+                // Tile (1, 1)
+                0.5f,  0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
+                1.5f,  0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
+                1.5f,  1.5f, 0.0f, 1.0f, 1.0f,   // Top-right
+                0.5f,  1.5f, 0.0f, 0.0f, 1.0f    // Top-left
+        };
         FloatBuffer myFB = BufferUtils.createFloatBuffer(my_v.length);
-        myFB.put(my_v).flip();
+        myFB.put(my_v);
+        myFB.flip();
         // vertex array
-        int vaoID = glGenVertexArrays();
+        vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
         // vertex buffer object
-        int vboID = glGenBuffers();
+        vboID = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
         glBufferData(GL_ARRAY_BUFFER, myFB, GL_STATIC_DRAW);
         // Attributes
         int loc0 = 0, loc1 = 1, positionStride = 3, vertexStride = 5, tstride = 4;
         glVertexAttribPointer(loc0, positionStride, GL_FLOAT, false, vertexStride, 0);
         glVertexAttribPointer(loc1, tstride, GL_FLOAT, false, vertexStride, positionStride);
+        glEnableVertexAttribArray(loc0);
+        glEnableVertexAttribArray(loc1);
         // Shader Object
-        DCShaderObject my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_1.glsl");
+        my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_1.glsl");
         my_so.compileShader();
         my_so.setShaderProgram();
         // Camera Object
-        DCCamera my_c = new DCCamera();
-        my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix()); // TODO
-        my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix()); // TODO
+        my_c = new DCCamera();
+        my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix());
+        my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix());
+
 
         // End of New Stuff
 

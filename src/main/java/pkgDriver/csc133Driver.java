@@ -9,7 +9,7 @@ import pkgSlUtils.slWindowManager;
 
 public class csc133Driver {
     public static void main(String[] my_args) {
-        final int FRAME_DELAY = 500, NUM_ROWS = 9, NUM_COLS = 7;
+        final int FRAME_DELAY = 500, NUM_ROWS = 1, NUM_COLS = 1;
 
         slRenderEngine my_re = new DCPolygonRenderer();
         slWindowManager.get().initGLFWWindow(WIN_WIDTH, WIN_HEIGHT, "CSUS CSC133");
@@ -19,6 +19,7 @@ public class csc133Driver {
         final float RADIUS = 0.5f;
 
         DCPingPong myPingPong = new DCPingPong(NUM_ROWS, NUM_COLS);
+
 
         my_re.render(FRAME_DELAY, NUM_ROWS, NUM_COLS, myPingPong);
 //        my_re.render(RADIUS);

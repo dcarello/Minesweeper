@@ -14,10 +14,10 @@ import static org.lwjgl.opengl.GL30.*;
 public class DCShaderObject {
 
     private String vs_shader_file, fs_shader_file;
-    private int shader_program;
+    private static int shader_program;
     private int vs;
     private int fs;
-    private final int OGL_VEC4_SIZE = 4;
+    public static final int OGL_VEC4_SIZE = 16;
 
     public DCShaderObject(String vs_shader_file, String fs_shader_file){
         this.vs_shader_file = vs_shader_file;
@@ -81,17 +81,32 @@ public class DCShaderObject {
 
     public void loadMatrix4f(String strMatrixName, Matrix4f my_mat4) {
         int var_location = glGetUniformLocation(shader_program, strMatrixName);
+        if (var_location == -1) {
+            throw new RuntimeException("Could not find uniform location for: " + strMatrixName);
+        }
+//        else{
+//            System.out.println( strMatrixName + " Matrix location: " + var_location);
+//        }
         final int OGL_MATRIX_SIZE = 16;
         FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(OGL_MATRIX_SIZE);
         my_mat4.get(matrixBuffer);
         glUniformMatrix4fv(var_location, false, matrixBuffer);
+
     } // public void loadMatrix4f(...)
 
     public void loadVector4f(String strVec4Name, Vector4f my_vec4) {
         int var_location = glGetUniformLocation(shader_program, strVec4Name);
+        if (var_location == -1) {
+            throw new RuntimeException("Could not find uniform location for: " + strVec4Name);
+        }
+//        else{
+//            System.out.println( strVec4Name + " Matrix location: " + var_location);
+//        }
+
         FloatBuffer vec4Buffer = BufferUtils.createFloatBuffer(OGL_VEC4_SIZE);
         my_vec4.get(vec4Buffer);
         glUniform4fv(var_location, vec4Buffer);
+
     } // public void loadVec4f(...)
 
 }
