@@ -113,6 +113,8 @@ public class DCPolygonRenderer extends slRenderEngine{
     } // public void render(...)
 
     public void render(int FRAME_DELAY_INPUT, int NUM_ROWS, int NUM_COLS, DCPingPong myPingPong){
+        this.NUM_COLS = NUM_COLS;
+        this.NUM_ROWS = NUM_ROWS;
         C_RADIUS = radiusFinder(NUM_ROWS, NUM_COLS) * 1.9f;
         MAX_POLYGONS = numPolygons(NUM_ROWS, NUM_COLS);
         FRAME_DELAY = FRAME_DELAY_INPUT;
@@ -122,7 +124,7 @@ public class DCPolygonRenderer extends slRenderEngine{
 
         // Set the color factor (this can be adjusted to any color you want)
         Vector4f COLOR_FACTOR = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
-
+//        Vector4f COLOR_FACTOR;
 
         startInteractiveThread(myPingPong);
 
@@ -141,6 +143,7 @@ public class DCPolygonRenderer extends slRenderEngine{
             // Loop through rows and columns to draw each square
             for (int row = 0; row < NUM_ROWS; row++) {
                 for (int col = 0; col < NUM_COLS; col++) {
+                    // Use different colors based on the row and column
                     my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                     renderTile(row, col);
                 }
@@ -149,7 +152,6 @@ public class DCPolygonRenderer extends slRenderEngine{
         } // while (!my_wm.isGlfwWindowClosed())
         my_wm.destroyGlfwWindow();
     }
-
 
     //    Render the particular tile
     public void renderTile(int row, int col) {
@@ -164,56 +166,9 @@ public class DCPolygonRenderer extends slRenderEngine{
         glDrawElements(GL_TRIANGLES, rgVertexIndices.length, GL_UNSIGNED_INT, 0);
     } // public void renderTile(...)
 
-    // Method to render a specific tile (square) at the given row and column
-//    public void renderTile(int row, int col) {
-//        int va_offset = getVAVIndex(row, col); // Get the starting index of the tile's vertices in the vertex array
-//
-//        // Indices for the two triangles that form the square
-//        int[] rgVertexIndices = new int[] {
-//                va_offset, va_offset + 1, va_offset + 2,  // First triangle
-//                va_offset + 2, va_offset + 3, va_offset   // Second triangle
-//        };
-//
-//        // Create a buffer for storing indices
-//        VertexIndicesBuffer = BufferUtils.createIntBuffer(6);
-//
-//        // Update the index buffer for this tile
-//
-//        VertexIndicesBuffer.clear();
-//        VertexIndicesBuffer.put(rgVertexIndices).flip();
-//
-//        // Generate and bind the Element Buffer Object (EBO)
-//        eboID = glGenBuffers();
-//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, VertexIndicesBuffer, GL_STATIC_DRAW);
-//
-//        // Use the shader program
-//        glUseProgram(my_so.getShader_program());
-//        checkGLErrors("Using Shader Program");
-//
-//        // Set the color factor (this can be adjusted to any color you want)
-//        Vector4f COLOR_FACTOR = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
-//        my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR); // Green
-//
-//        // Bind the VAO
-//        glBindVertexArray(vaoID);
-//        checkGLErrors("Binding VAO");
-//
-//        // Draw the tile using the calculated indices
-//        glDrawElements(GL_TRIANGLES, rgVertexIndices.length, GL_UNSIGNED_INT, 0);
-//        checkGLErrors("Drawing Elements");
-//    }
-
     // Method to calculate the vertex array index for a given tile
     public int getVAVIndex(int row, int col) {
         return (row * NUM_COLS + col) * VPT; // Each square has 4 vertices, 2 rows and 2 columns
-    }
-
-    private void checkGLErrors(String stage) {
-        int error = glGetError();
-        if (error != GL_NO_ERROR) {
-            System.out.println("OpenGL error (" + stage + "): " + error);
-        }
     }
 
     private void drawSquare(float x, float y, float size, boolean alive) {
