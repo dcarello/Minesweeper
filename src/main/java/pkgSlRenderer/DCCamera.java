@@ -10,13 +10,14 @@ public class DCCamera {
 
     public DCCamera(){
 
-        lookFrom = new Vector3f(0f, 0f, 100f);
-        lookAt = new Vector3f(0f, 0f, -1.0f);
-        upVector = new Vector3f(0f, 1.0f, 0f);
+
 
     }
 
     public Matrix4f getViewMatrix(){
+        lookFrom = new Vector3f(0f, 0f, 100f);
+        lookAt = new Vector3f(0f, 0f, -1.0f);
+        upVector = new Vector3f(0f, 1.0f, 0f);
 
         Matrix4f viewMatrix = new Matrix4f();
         viewMatrix.identity();
@@ -26,7 +27,7 @@ public class DCCamera {
     }
 
     public Matrix4f getProjectionMatrix(){
-        float zNear = 0f, zFar = 100f, screen_left = -1.0f, screen_right = 1.0f, screen_bottom = -1.0f, screen_top = 1.0f;
+        float screen_left = -1.0f, screen_right = 1.0f, screen_bottom = -1.0f, screen_top = 1.0f, zNear = 0.0f, zFar = 100.0f;
 
         Matrix4f projMatrix = new Matrix4f();
         projMatrix.identity();

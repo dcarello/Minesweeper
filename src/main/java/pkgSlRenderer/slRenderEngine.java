@@ -46,63 +46,63 @@ public abstract class slRenderEngine {
         int FPP = 4;
         // vertex buffer data
 //        float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
-//        float[] my_v = {
-//                // Position            // Texture coordinates
-//                -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, // Bottom Left
-//                0.5f, -0.5f, 0.0f,      1.0f, 0.0f, // Bottom Right
-//                0.5f, 0.5f, 0.0f,       1.0f, 1.0f, // Top Right
-//                -0.5f, 0.5f, 0.0f,      0.0f, 1.0f, // Top Left
-//        };
         float[] my_v = {
-                // Tile (0, 0)
-                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
-                0.5f, -0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
-                0.5f,  0.5f, 0.0f, 1.0f, 1.0f,   // Top-right
-                -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,   // Top-left
+                // Square 1 (Bottom-left)
+                -0.9f, -0.9f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+                -0.05f, -0.9f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+                -0.05f, -0.05f, 0.0f,  1.0f, 1.0f,  // Top-right
+                -0.9f, -0.05f, 0.0f,  0.0f, 1.0f,  // Top-left
 
-                // Tile (0, 1)
-                0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
-                1.5f, -0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
-                1.5f,  0.5f, 0.0f, 1.0f, 1.0f,   // Top-right
-                0.5f,  0.5f, 0.0f, 0.0f, 1.0f,   // Top-left
+                // Square 2 (Bottom-right)
+                0.05f, -0.9f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+                0.9f, -0.9f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+                0.9f, -0.05f, 0.0f,  1.0f, 1.0f,  // Top-right
+                0.05f, -0.05f, 0.0f,  0.0f, 1.0f,  // Top-left
 
-                // Tile (1, 0)
-                -0.5f,  0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
-                0.5f,  0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
-                0.5f,  1.5f, 0.0f, 1.0f, 1.0f,   // Top-right
-                -0.5f,  1.5f, 0.0f, 0.0f, 1.0f,   // Top-left
+                // Square 3 (Top-left)
+                -0.9f,  0.05f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+                -0.05f,  0.05f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+                -0.05f,  0.9f, 0.0f,  1.0f, 1.0f,  // Top-right
+                -0.9f,  0.9f, 0.0f,  0.0f, 1.0f,  // Top-left
 
-                // Tile (1, 1)
-                0.5f,  0.5f, 0.0f, 0.0f, 0.0f,   // Bottom-left
-                1.5f,  0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
-                1.5f,  1.5f, 0.0f, 1.0f, 1.0f,   // Top-right
-                0.5f,  1.5f, 0.0f, 0.0f, 1.0f    // Top-left
+                // Square 4 (Top-right)
+                0.05f,  0.05f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+                0.9f,  0.05f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+                0.9f,  0.9f, 0.0f,  1.0f, 1.0f,  // Top-right
+                0.05f,  0.9f, 0.0f,  0.0f, 1.0f   // Top-left
         };
-        FloatBuffer myFB = BufferUtils.createFloatBuffer(my_v.length);
-        myFB.put(my_v);
-        myFB.flip();
+
+
         // vertex array
         vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
+
         // vertex buffer object
         vboID = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
+
+        // connect data to vbo
+        FloatBuffer myFB = BufferUtils.createFloatBuffer(my_v.length);
+        myFB.put(my_v);
+        myFB.flip();
         glBufferData(GL_ARRAY_BUFFER, myFB, GL_STATIC_DRAW);
+
         // Attributes
-        int loc0 = 0, loc1 = 1, positionStride = 3, vertexStride = 5, tstride = 4;
-        glVertexAttribPointer(loc0, positionStride, GL_FLOAT, false, vertexStride, 0);
-        glVertexAttribPointer(loc1, tstride, GL_FLOAT, false, vertexStride, positionStride);
+        int loc0 = 0, loc1 = 1, positionStride = 3, vertexStride = 5, tstride = 2;
+        glVertexAttribPointer(loc0, positionStride, GL_FLOAT, false, vertexStride * Float.BYTES, 0); // Positions
         glEnableVertexAttribArray(loc0);
+        glVertexAttribPointer(loc1, tstride, GL_FLOAT, false, vertexStride * Float.BYTES, positionStride * Float.BYTES); // Textures
         glEnableVertexAttribArray(loc1);
+
         // Shader Object
         my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_1.glsl");
         my_so.compileShader();
         my_so.setShaderProgram();
+
         // Camera Object
         my_c = new DCCamera();
         my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix());
         my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix());
-
 
         // End of New Stuff
 
