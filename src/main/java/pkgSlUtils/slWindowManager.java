@@ -52,12 +52,18 @@ public class slWindowManager {
         }
     }
 
-//    public int[] getWindowSize(){
-//        glfwGetWindowSize();
-//    }
+    public int[] getWindowSize(){
+        int[] size = new int[2];
+        glfwGetWindowSize(glfw_win, size, size);
+        return size;
+    }
 
     public void updateContextToThis(){
         glfwMakeContextCurrent(glfw_win);
+    }
+
+    public void setKeyCallback(){
+        glfwSetKeyCallback(glfw_win, DCKeyListener::keyCallback);
     }
 
     private static GLFWFramebufferSizeCallback resizeWindow =
@@ -68,13 +74,10 @@ public class slWindowManager {
                 }
             };
 
+
     public void enableResizeWindowCallback() {
         glfwSetFramebufferSizeCallback(glfw_win, resizeWindow);
     } // public void enableResizeWindowCallback(...)
-
-    public void setKeyCallback(){
-        glfwSetKeyCallback(glfw_win, DCKeyListener::keyCallback);
-    }
 
 
 

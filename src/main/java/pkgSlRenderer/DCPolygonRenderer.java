@@ -31,6 +31,8 @@ public class DCPolygonRenderer extends slRenderEngine{
     private int VPT = 4;
     private int[] rgVertexIndices;
     private IntBuffer VertexIndicesBuffer;
+    private float[] VERTICES;
+    private final int FloatsPerSquare = 20;
 
     // Thread to handle Interactive controls
     private void startInteractiveThread(DCPingPong myPingPong){
@@ -64,6 +66,73 @@ public class DCPolygonRenderer extends slRenderEngine{
         InteractiveThread.start();
     }
 
+    private void initPipeline(){
+        // New Stuff
+        int FPP = 5 * 4;
+        // vertex buffer data
+//        float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
+//        float[] my_v = {
+//                // Square 1 (Bottom-left)
+//                -0.9f, -0.9f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+//                -0.05f, -0.9f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+//                -0.05f, -0.05f, 0.0f,  1.0f, 1.0f,  // Top-right
+//                -0.9f, -0.05f, 0.0f,  0.0f, 1.0f,  // Top-left
+//
+//                // Square 2 (Bottom-right)
+//                0.05f, -0.9f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+//                0.9f, -0.9f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+//                0.9f, -0.05f, 0.0f,  1.0f, 1.0f,  // Top-right
+//                0.05f, -0.05f, 0.0f,  0.0f, 1.0f,  // Top-left
+//
+//                // Square 3 (Top-left)
+//                -0.9f,  0.05f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+//                -0.05f,  0.05f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+//                -0.05f,  0.9f, 0.0f,  1.0f, 1.0f,  // Top-right
+//                -0.9f,  0.9f, 0.0f,  0.0f, 1.0f,  // Top-left
+//
+//                // Square 4 (Top-right)
+//                0.05f,  0.05f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+//                0.9f,  0.05f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+//                0.9f,  0.9f, 0.0f,  1.0f, 1.0f,  // Top-right
+//                0.05f,  0.9f, 0.0f,  0.0f, 1.0f   // Top-left
+//        };
+
+        // vertex array
+        vaoID = glGenVertexArrays();
+        glBindVertexArray(vaoID);
+
+        // vertex buffer object
+        vboID = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+
+        VERTICES = new float[NUM_ROWS * NUM_COLS * FloatsPerSquare];
+        findCenterCoords(NUM_ROWS, NUM_COLS);
+
+        // connect data to vbo
+        FloatBuffer myFB = BufferUtils.createFloatBuffer(VERTICES.length);
+        myFB.put(VERTICES);
+        myFB.flip();
+        glBufferData(GL_ARRAY_BUFFER, myFB, GL_STATIC_DRAW);
+
+        // Attributes
+        int loc0 = 0, loc1 = 1, positionStride = 3, vertexStride = 5, tstride = 2;
+        glVertexAttribPointer(loc0, positionStride, GL_FLOAT, false, vertexStride * Float.BYTES, 0); // Positions
+        glEnableVertexAttribArray(loc0);
+        glVertexAttribPointer(loc1, tstride, GL_FLOAT, false, vertexStride * Float.BYTES, positionStride * Float.BYTES); // Textures
+        glEnableVertexAttribArray(loc1);
+
+        // Shader Object
+        my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_1.glsl");
+        my_so.compileShader();
+        my_so.setShaderProgram();
+
+        // Camera Object
+        my_c = new DCCamera();
+        my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix());
+        my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix());
+
+        // End of New Stuff
+    }
 
     // First overload given frame delay, num rows, num cols calculates radius to render the polygons
     public void render(int FRAME_DELAY, int NUM_ROWS, int NUM_COLS) {
@@ -117,10 +186,10 @@ public class DCPolygonRenderer extends slRenderEngine{
         this.NUM_ROWS = NUM_ROWS;
         C_RADIUS = radiusFinder(NUM_ROWS, NUM_COLS) * 1.9f;
         MAX_POLYGONS = numPolygons(NUM_ROWS, NUM_COLS);
-        FRAME_DELAY = FRAME_DELAY_INPUT;
-
+//        FRAME_DELAY = FRAME_DELAY_INPUT;
         initializeArrays();
-        findCenterCoords(NUM_COLS);
+        initPipeline();
+        findCenterCoords(NUM_ROWS, NUM_COLS);
 
         // Set the color factor (this can be adjusted to any color you want)
         Vector4f COLOR_FACTOR = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
@@ -219,6 +288,26 @@ public class DCPolygonRenderer extends slRenderEngine{
     // Determines the total number of polygons in the array based on the number of rows and columns
     private int numPolygons(int NUM_ROWS, int NUM_COLS){
         return NUM_ROWS * NUM_COLS;
+    }
+
+    // Finds the center coordinates for each polygon in the array
+    private void findCenterCoords(int NUM_ROWS, int NUM_COLS) {
+        float C_RADIUS = radiusFinder(NUM_ROWS, NUM_COLS) * 1.9f;
+        float spacingX = 2.0f / NUM_COLS;
+        float spacingY = 2.0f / NUM_ROWS;
+        float x;
+        float y;
+        int index = 0;
+        for (int row = 0; row < NUM_ROWS; row++){
+            for (int col = 0; col < NUM_COLS; col++){
+                x = -1.0f + col * spacingX + spacingX / 2;
+                y = -1.0f + row * spacingY + spacingY / 2;
+                VERTICES[index++] = x - (C_RADIUS / 2); VERTICES[index++] = y - (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; // Bottom Left
+                VERTICES[index++] = x + (C_RADIUS / 2); VERTICES[index++] = y - (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; VERTICES[index++] = 0.0f; // Bottom Right
+                VERTICES[index++] = x + (C_RADIUS / 2); VERTICES[index++] = y + (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; VERTICES[index++] = 1.0f; // Top Right
+                VERTICES[index++] = x - (C_RADIUS / 2); VERTICES[index++] = y + (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; // Top Left
+            }
+        }
     }
 
     // Finds the center coordinates for each polygon in the array
