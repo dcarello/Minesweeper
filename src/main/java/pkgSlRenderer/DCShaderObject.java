@@ -36,20 +36,20 @@ public class DCShaderObject {
         vs = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vs, readFile(vs_shader_file));
         glCompileShader(vs);
-        checkCompileErrors(vs, "VERTEX");
+//        checkCompileErrors(vs, "VERTEX");
         glAttachShader(shader_program, vs);
 
         // Fragment Shader Compile
         fs = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fs, readFile(fs_shader_file));
         glCompileShader(fs);
-        checkCompileErrors(fs, "FRAGMENT");
+//        checkCompileErrors(fs, "FRAGMENT");
         glAttachShader(shader_program, fs);
     }
 
     public void setShaderProgram(){
         glLinkProgram(shader_program);
-        checkLinkErrors(shader_program);
+//        checkLinkErrors(shader_program);
         glDeleteShader(vs);
         glDeleteShader(fs);
 

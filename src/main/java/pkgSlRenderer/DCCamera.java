@@ -2,16 +2,13 @@ package pkgSlRenderer;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import static pkgDriver.slSpot.*;
 
 public class DCCamera {
 
     Vector3f lookFrom, lookAt, upVector;
 
-
     public DCCamera(){
-
-
-
     }
 
     public Matrix4f getViewMatrix(){
@@ -27,11 +24,9 @@ public class DCCamera {
     }
 
     public Matrix4f getProjectionMatrix(){
-        float screen_left = -1.0f, screen_right = 1.0f, screen_bottom = -1.0f, screen_top = 1.0f, zNear = 0.0f, zFar = 100.0f;
-
         Matrix4f projMatrix = new Matrix4f();
         projMatrix.identity();
-        projMatrix.ortho(screen_left, screen_right, screen_bottom, screen_top, zNear, zFar);
+        projMatrix.ortho(FRUSTUM_LEFT, FRUSTUM_RIGHT, FRUSTUM_BOTTOM, FRUSTUM_TOP, Z_NEAR, Z_FAR);
 
         return projMatrix;
     }

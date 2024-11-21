@@ -3,6 +3,7 @@ package pkgSlRenderer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
+import static pkgDriver.slSpot.*;
 
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils.*;
@@ -67,36 +68,6 @@ public class DCPolygonRenderer extends slRenderEngine{
     }
 
     private void initPipeline(){
-        // New Stuff
-        int FPP = 5 * 4;
-        // vertex buffer data
-//        float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
-//        float[] my_v = {
-//                // Square 1 (Bottom-left)
-//                -0.9f, -0.9f, 0.0f,  0.0f, 0.0f,  // Bottom-left
-//                -0.05f, -0.9f, 0.0f,  1.0f, 0.0f,  // Bottom-right
-//                -0.05f, -0.05f, 0.0f,  1.0f, 1.0f,  // Top-right
-//                -0.9f, -0.05f, 0.0f,  0.0f, 1.0f,  // Top-left
-//
-//                // Square 2 (Bottom-right)
-//                0.05f, -0.9f, 0.0f,  0.0f, 0.0f,  // Bottom-left
-//                0.9f, -0.9f, 0.0f,  1.0f, 0.0f,  // Bottom-right
-//                0.9f, -0.05f, 0.0f,  1.0f, 1.0f,  // Top-right
-//                0.05f, -0.05f, 0.0f,  0.0f, 1.0f,  // Top-left
-//
-//                // Square 3 (Top-left)
-//                -0.9f,  0.05f, 0.0f,  0.0f, 0.0f,  // Bottom-left
-//                -0.05f,  0.05f, 0.0f,  1.0f, 0.0f,  // Bottom-right
-//                -0.05f,  0.9f, 0.0f,  1.0f, 1.0f,  // Top-right
-//                -0.9f,  0.9f, 0.0f,  0.0f, 1.0f,  // Top-left
-//
-//                // Square 4 (Top-right)
-//                0.05f,  0.05f, 0.0f,  0.0f, 0.0f,  // Bottom-left
-//                0.9f,  0.05f, 0.0f,  1.0f, 0.0f,  // Bottom-right
-//                0.9f,  0.9f, 0.0f,  1.0f, 1.0f,  // Top-right
-//                0.05f,  0.9f, 0.0f,  0.0f, 1.0f   // Top-left
-//        };
-
         // vertex array
         vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
@@ -105,8 +76,9 @@ public class DCPolygonRenderer extends slRenderEngine{
         vboID = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
+        // Get Vertices of Squares
         VERTICES = new float[NUM_ROWS * NUM_COLS * FloatsPerSquare];
-        findCenterCoords(NUM_ROWS, NUM_COLS);
+        getVertexData(NUM_ROWS, NUM_COLS);
 
         // connect data to vbo
         FloatBuffer myFB = BufferUtils.createFloatBuffer(VERTICES.length);
@@ -130,8 +102,6 @@ public class DCPolygonRenderer extends slRenderEngine{
         my_c = new DCCamera();
         my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix());
         my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix());
-
-        // End of New Stuff
     }
 
     // First overload given frame delay, num rows, num cols calculates radius to render the polygons
@@ -189,11 +159,9 @@ public class DCPolygonRenderer extends slRenderEngine{
 //        FRAME_DELAY = FRAME_DELAY_INPUT;
         initializeArrays();
         initPipeline();
-        findCenterCoords(NUM_ROWS, NUM_COLS);
 
         // Set the color factor (this can be adjusted to any color you want)
-        Vector4f COLOR_FACTOR = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
-//        Vector4f COLOR_FACTOR;
+        Vector4f COLOR_FACTOR = new Vector4f(0.25f, 0.25f, 0.5f, 1.0f);
 
         startInteractiveThread(myPingPong);
 
@@ -202,7 +170,6 @@ public class DCPolygonRenderer extends slRenderEngine{
 
             glfwPollEvents();
 
-//            glClearColor(0.0f, 0.0f, 1.0f, 1.0f); // Set the clear color to blue
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (FRAME_DELAY != 0){
@@ -226,7 +193,7 @@ public class DCPolygonRenderer extends slRenderEngine{
     public void renderTile(int row, int col) {
         // Compute the vertexArray offset
         int va_offset = getVAVIndex(row, col); // vertex array offset of tile
-        rgVertexIndices = new int[] {va_offset, va_offset+1, va_offset+2, va_offset+2, va_offset+3, va_offset};
+        rgVertexIndices = new int[] {va_offset, va_offset+1, va_offset+2, va_offset, va_offset+2, va_offset+3};
         VertexIndicesBuffer = BufferUtils.createIntBuffer(rgVertexIndices.length);
         VertexIndicesBuffer.put(rgVertexIndices).flip();
         eboID = glGenBuffers();
@@ -260,7 +227,6 @@ public class DCPolygonRenderer extends slRenderEngine{
         glEnd();
     }
 
-
     // Initializes the arrays for random colors, and the coordinates
     private void initializeArrays(){
         center_coords = new float[MAX_POLYGONS][NUM_3D_COORDS];
@@ -290,23 +256,21 @@ public class DCPolygonRenderer extends slRenderEngine{
         return NUM_ROWS * NUM_COLS;
     }
 
-    // Finds the center coordinates for each polygon in the array
-    private void findCenterCoords(int NUM_ROWS, int NUM_COLS) {
-        float C_RADIUS = radiusFinder(NUM_ROWS, NUM_COLS) * 1.9f;
-        float spacingX = 2.0f / NUM_COLS;
-        float spacingY = 2.0f / NUM_ROWS;
-        float x;
-        float y;
+    private void getVertexData(int NUM_ROWS, int NUM_COLS){
         int index = 0;
+        float x = 0.0f + POLY_OFFSET;
+        float y = 0.0f + POLY_OFFSET;
         for (int row = 0; row < NUM_ROWS; row++){
             for (int col = 0; col < NUM_COLS; col++){
-                x = -1.0f + col * spacingX + spacingX / 2;
-                y = -1.0f + row * spacingY + spacingY / 2;
-                VERTICES[index++] = x - (C_RADIUS / 2); VERTICES[index++] = y - (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; // Bottom Left
-                VERTICES[index++] = x + (C_RADIUS / 2); VERTICES[index++] = y - (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; VERTICES[index++] = 0.0f; // Bottom Right
-                VERTICES[index++] = x + (C_RADIUS / 2); VERTICES[index++] = y + (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; VERTICES[index++] = 1.0f; // Top Right
-                VERTICES[index++] = x - (C_RADIUS / 2); VERTICES[index++] = y + (C_RADIUS / 2); VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; // Top Left
+                VERTICES[index++] = x; VERTICES[index++] = y; VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; // Bottom Left
+                VERTICES[index++] = x + POLYGON_LENGTH; VERTICES[index++] = y; VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; VERTICES[index++] = 0.0f; // Bottom Right
+                VERTICES[index++] = x + POLYGON_LENGTH; VERTICES[index++] = y + POLYGON_LENGTH; VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; VERTICES[index++] = 1.0f; // Top Right
+                VERTICES[index++] = x; VERTICES[index++] = y + POLYGON_LENGTH; VERTICES[index++] = 0.0f; VERTICES[index++] = 0.0f; VERTICES[index++] = 1.0f; // Top Left
+
+                x += POLYGON_LENGTH + POLY_PADDING;
             }
+            y += POLYGON_LENGTH + POLY_PADDING;
+            x = 0.0f + POLY_OFFSET;
         }
     }
 
