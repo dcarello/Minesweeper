@@ -6,20 +6,14 @@ import static org.lwjgl.opengl.GL11.glClear;
 import static pkgDriver.slSpot.*;
 
 import org.joml.Vector4f;
-import org.lwjgl.BufferUtils.*;
-import org.lwjgl.opengl.GL30.*;
-import java.nio.IntBuffer.*;
+
 import java.nio.*;
 import static org.lwjgl.opengl.GL33.*;
 
-import java.util.Random;
-
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.*;
 import pkgKeyListener.DCKeyListener;
+import pkgKeyListener.DCMouseListener;
 import pkgPingPong.DCPingPong;
-
-import static org.lwjgl.opengl.GL11.*;
 
 public class DCPolygonRenderer extends slRenderEngine{
 
@@ -39,12 +33,12 @@ public class DCPolygonRenderer extends slRenderEngine{
     private void startInteractiveThread(DCPingPong myPingPong){
         Thread InteractiveThread = new Thread(() ->{
             while (!my_wm.isGlfwWindowClosed()) {
+                // Interactive Keyboard Listener
                 if (DCKeyListener.isKeyPressed(GLFW_KEY_I) ) {
                     FRAME_DELAY += 500;
                     System.out.println("+++ Frame delay is now: " + FRAME_DELAY + " ms!");
                     DCKeyListener.resetKeypressEvent(GLFW_KEY_I);
                 }
-
                 if (DCKeyListener.isKeyPressed(GLFW_KEY_D)) {
                     if (FRAME_DELAY < 500){
                         FRAME_DELAY = 0;
@@ -61,6 +55,33 @@ public class DCPolygonRenderer extends slRenderEngine{
                     myPingPong.boardReset();
                     DCKeyListener.resetKeypressEvent(GLFW_KEY_R);
 
+                }
+
+                // Interactive Mouse Listener
+                if (DCMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)){
+                    float mx = DCMouseListener.getX();
+                    float my = DCMouseListener.getY();
+                    float col, row;
+                    float spaceInBetween = ((float)POLYGON_LENGTH / (POLYGON_LENGTH + POLY_PADDING));
+//                    System.out.println("X: " + mx);
+//                    System.out.println("Y: " + my);
+
+                    col =  ((mx - POLY_OFFSET) / (POLYGON_LENGTH + POLY_PADDING));
+                    row =  ((my - POLY_OFFSET) / (POLYGON_LENGTH + POLY_PADDING));
+//                    System.out.println("Col: " + col + " Row: " + row);
+//                    System.out.println("Space In between: " + spaceInBetween);
+                    if ((row > 0 && col > 0)){
+                        if ((row == (int)row || row < (int)row + spaceInBetween) && (col == (int)col || col < (int)col + spaceInBetween)){
+                            if ((int)row < NUM_ROWS && (int)col < NUM_COLS){
+                                System.out.println("(" + (int)col + ", " + (int)row + ")");
+                            }
+
+                        }
+
+                    }
+
+//                    System.out.println("Width: " + WIN_WIDTH + " Height: " + WIN_HEIGHT);
+                    DCMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
                 }
             }
         });

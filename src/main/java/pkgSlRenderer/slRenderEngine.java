@@ -40,6 +40,7 @@ public abstract class slRenderEngine {
 
     public void initOpenGL(int NUM_ROWS, int NUM_COLS, slWindowManager my_wm){
         my_wm.setKeyCallback();
+        my_wm.setMouseCallback();
         my_wm.updateContextToThis();
         GL.createCapabilities();
         glClear(GL_COLOR_BUFFER_BIT);
