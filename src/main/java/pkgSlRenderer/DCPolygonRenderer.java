@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
 import static pkgDriver.slSpot.*;
 
+import DCMineSweeperBE.MSB;
 import org.joml.Vector4f;
 
 import java.nio.*;
@@ -28,6 +29,10 @@ public class DCPolygonRenderer extends slRenderEngine{
     private IntBuffer VertexIndicesBuffer;
     private float[] VERTICES;
     private final int FloatsPerSquare = 20;
+
+    private MSB board = new MSB();
+
+    DCTextureObject my_to;
 
     // Thread to handle Interactive controls
     private void startInteractiveThread(DCPingPong myPingPong){
@@ -63,24 +68,18 @@ public class DCPolygonRenderer extends slRenderEngine{
                     float my = DCMouseListener.getY();
                     float col, row;
                     float spaceInBetween = ((float)POLYGON_LENGTH / (POLYGON_LENGTH + POLY_PADDING));
-//                    System.out.println("X: " + mx);
-//                    System.out.println("Y: " + my);
 
                     col =  ((mx - POLY_OFFSET) / (POLYGON_LENGTH + POLY_PADDING));
                     row =  ((my - POLY_OFFSET) / (POLYGON_LENGTH + POLY_PADDING));
-//                    System.out.println("Col: " + col + " Row: " + row);
-//                    System.out.println("Space In between: " + spaceInBetween);
                     if ((row > 0 && col > 0)){
                         if ((row == (int)row || row < (int)row + spaceInBetween) && (col == (int)col || col < (int)col + spaceInBetween)){
                             if ((int)row < NUM_ROWS && (int)col < NUM_COLS){
                                 System.out.println("(" + (int)col + ", " + (int)row + ")");
+                                
                             }
-
                         }
-
                     }
 
-//                    System.out.println("Width: " + WIN_WIDTH + " Height: " + WIN_HEIGHT);
                     DCMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
                 }
             }
@@ -115,7 +114,7 @@ public class DCPolygonRenderer extends slRenderEngine{
         glEnableVertexAttribArray(loc1);
 
         // Shader Object
-        my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_1.glsl");
+        my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_2.glsl");
         my_so.compileShader();
         my_so.setShaderProgram();
 
@@ -175,16 +174,25 @@ public class DCPolygonRenderer extends slRenderEngine{
     public void render(int FRAME_DELAY_INPUT, int NUM_ROWS, int NUM_COLS, DCPingPong myPingPong){
         this.NUM_COLS = NUM_COLS;
         this.NUM_ROWS = NUM_ROWS;
-        C_RADIUS = radiusFinder(NUM_ROWS, NUM_COLS) * 1.9f;
-        MAX_POLYGONS = numPolygons(NUM_ROWS, NUM_COLS);
-//        FRAME_DELAY = FRAME_DELAY_INPUT;
         initializeArrays();
         initPipeline();
 
+        FRAME_DELAY = 1000;
+
         // Set the color factor (this can be adjusted to any color you want)
-        Vector4f COLOR_FACTOR = new Vector4f(0.25f, 0.25f, 0.5f, 1.0f);
+        Vector4f COLOR_FACTOR = new Vector4f(1.f, 1.0f, 1.0f, 1.0f);
+
+        boolean mystery = true;
+        my_to = new DCTextureObject("assets/images/MysteryBox_2.PNG");
+        DCTextureObject my_to1 = new DCTextureObject("assets/images/ShiningDiamond_2.PNG");
 
         startInteractiveThread(myPingPong);
+
+        board.printMineBoard();
+
+        System.out.println();
+
+        board.printPointsBoard();
 
         while (!my_wm.isGlfwWindowClosed()) {
             updateRandVerticesRandColors();
@@ -197,14 +205,22 @@ public class DCPolygonRenderer extends slRenderEngine{
                 Delay(FRAME_DELAY);
             }
 
+            if (mystery){
+                my_to.loadImageToTexture();
+            }else{
+                my_to1.loadImageToTexture();
+            }
+
             // Loop through rows and columns to draw each square
             for (int row = 0; row < NUM_ROWS; row++) {
                 for (int col = 0; col < NUM_COLS; col++) {
                     // Use different colors based on the row and column
                     my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+
                     renderTile(row, col);
                 }
             }
+            mystery = !mystery;
             my_wm.swapBuffers();
         } // while (!my_wm.isGlfwWindowClosed())
         my_wm.destroyGlfwWindow();
