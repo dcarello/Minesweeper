@@ -18,7 +18,7 @@ public class MSB {
     private class Cell{
         public int points;
         public int tile_type;
-        public boolean EXPOSED = false;
+        public boolean EXPOSED;
     }
 
     public MSB() {
@@ -33,20 +33,7 @@ public class MSB {
 
         initializeMines();
         initializePoints();
-    }
-
-    private void initializeMines(){
-        ArrayList<Integer> my_al = new ArrayList<Integer>(Collections.nCopies(NUM_POLY_ROWS * NUM_POLY_COLS, 0));
-        for (int i = 0; i < TOTAL_MINES; i++){
-            my_al.set(i, MINE);
-        }
-        Collections.shuffle(my_al);
-
-        for (int row = 0; row < NUM_POLY_ROWS; row++){
-            for (int col = 0; col < NUM_POLY_COLS; col++){
-                msboard[row][col].tile_type = my_al.get(NUM_POLY_COLS * row + col);
-            }
-        }
+        initializeExposed();
     }
 
     private void initializePoints(){
@@ -66,6 +53,30 @@ public class MSB {
             }
         }
     }
+
+    private void initializeMines(){
+        ArrayList<Integer> my_al = new ArrayList<Integer>(Collections.nCopies(NUM_POLY_ROWS * NUM_POLY_COLS, 0));
+        for (int i = 0; i < TOTAL_MINES; i++){
+            my_al.set(i, MINE);
+        }
+        Collections.shuffle(my_al);
+
+        for (int row = 0; row < NUM_POLY_ROWS; row++){
+            for (int col = 0; col < NUM_POLY_COLS; col++){
+                msboard[row][col].tile_type = my_al.get(NUM_POLY_COLS * row + col);
+            }
+        }
+    }
+
+    private void initializeExposed(){
+        for (int row = 0; row < NUM_POLY_ROWS; row++){
+            for (int col = 0; col < NUM_POLY_COLS; col++){
+                msboard[row][col].EXPOSED = false;
+            }
+        }
+    }
+
+
 
     public int nextNearestNeighbor(int row, int col) {
         int next_row = (row + 1) % NUM_POLY_ROWS;
@@ -93,6 +104,22 @@ public class MSB {
         msboard[row][col].EXPOSED = exposed;
     }
 
+    public void setAllCellsExposed(){
+        for (int row = 0; row < NUM_POLY_ROWS; row++){
+            for (int col = 0; col < NUM_POLY_COLS; col++){
+                msboard[row][col].EXPOSED = true;
+            }
+        }
+    }
+
+    public boolean getCellExposed(int row, int col){
+        return msboard[row][col].EXPOSED;
+    }
+
+    public boolean getCellMine(int row, int col){
+        return msboard[row][col].tile_type == MINE;
+    }
+
     public void printMineBoard(){
         for (int row = 0; row < NUM_POLY_ROWS; row++){
             for (int col = 0; col < NUM_POLY_COLS; col++){
@@ -111,6 +138,15 @@ public class MSB {
         for (int row = 0; row < NUM_POLY_ROWS; row++){
             for (int col = 0; col < NUM_POLY_COLS; col++){
                 System.out.printf("%2d ", msboard[row][col].points);
+            }
+            System.out.println();
+        }
+    }
+
+    public void printExposedBoard(){
+        for (int row = 0; row < NUM_POLY_ROWS; row++){
+            for (int col = 0; col < NUM_POLY_COLS; col++){
+                System.out.printf("%b ", msboard[row][col].EXPOSED);
             }
             System.out.println();
         }

@@ -30,9 +30,15 @@ public class DCPolygonRenderer extends slRenderEngine{
     private float[] VERTICES;
     private final int FloatsPerSquare = 20;
 
+    private final int TOTAL_TEXTURES = 3;
+    private final int MYSTERY_TEXTURE = 0;
+    private final int GOLD_TEXTURE = 1;
+    private final int MINE_TEXTURE = 2;
+    DCTextureObject[] my_to = new DCTextureObject[TOTAL_TEXTURES];
+
     private MSB board = new MSB();
 
-    DCTextureObject my_to;
+
 
     // Thread to handle Interactive controls
     private void startInteractiveThread(DCPingPong myPingPong){
@@ -75,6 +81,7 @@ public class DCPolygonRenderer extends slRenderEngine{
                         if ((row == (int)row || row < (int)row + spaceInBetween) && (col == (int)col || col < (int)col + spaceInBetween)){
                             if ((int)row < NUM_ROWS && (int)col < NUM_COLS){
                                 System.out.println("(" + (int)col + ", " + (int)row + ")");
+                                board.setCellExposed((int)row, (int)col, true);
                                 
                             }
                         }
@@ -182,9 +189,9 @@ public class DCPolygonRenderer extends slRenderEngine{
         // Set the color factor (this can be adjusted to any color you want)
         Vector4f COLOR_FACTOR = new Vector4f(1.f, 1.0f, 1.0f, 1.0f);
 
-        boolean mystery = true;
-        my_to = new DCTextureObject("assets/images/MysteryBox_2.PNG");
-        DCTextureObject my_to1 = new DCTextureObject("assets/images/ShiningDiamond_2.PNG");
+        my_to[0] = new DCTextureObject("assets/images/MysteryBox_2.PNG");
+        my_to[1] = new DCTextureObject("assets/images/ShiningDiamond_2.PNG");
+        my_to[2] = new DCTextureObject("assets/images/MineBomb_2.PNG");
 
         startInteractiveThread(myPingPong);
 
@@ -205,22 +212,35 @@ public class DCPolygonRenderer extends slRenderEngine{
                 Delay(FRAME_DELAY);
             }
 
-            if (mystery){
-                my_to.loadImageToTexture();
-            }else{
-                my_to1.loadImageToTexture();
-            }
-
             // Loop through rows and columns to draw each square
-            for (int row = 0; row < NUM_ROWS; row++) {
-                for (int col = 0; col < NUM_COLS; col++) {
-                    // Use different colors based on the row and column
-                    my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+            int renderedTiles = 0;
+            int MAX_TILES = NUM_POLY_COLS * NUM_POLY_ROWS;
 
-                    renderTile(row, col);
+            // Loop through texture rendering for each type
+            for (int currentTextureRender = 0; renderedTiles < MAX_TILES && currentTextureRender < TOTAL_TEXTURES; currentTextureRender++) {
+                for (int row = 0; row < NUM_ROWS; row++) {
+                    for (int col = 0; col < NUM_COLS; col++) {
+                        if (renderedTiles >= MAX_TILES) break;
+
+                        // Load specific texture only once per type
+                        my_to[currentTextureRender].loadImageToTexture();
+                        my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+
+                        // Determine the rendering condition
+                        if (!board.getCellExposed(row, col) && currentTextureRender == MYSTERY_TEXTURE) {
+                            renderTile(row, col);
+                            renderedTiles++;
+                        } else if (board.getCellExposed(row, col) && !board.getCellMine(row, col) && currentTextureRender == GOLD_TEXTURE) {
+                            renderTile(row, col);
+                            renderedTiles++;
+                        } else if (currentTextureRender != MYSTERY_TEXTURE && currentTextureRender != GOLD_TEXTURE) {
+                            renderTile(row, col);
+                            renderedTiles++;
+                        }
+                    }
                 }
             }
-            mystery = !mystery;
+
             my_wm.swapBuffers();
         } // while (!my_wm.isGlfwWindowClosed())
         my_wm.destroyGlfwWindow();
