@@ -9,7 +9,7 @@ import pkgSlUtils.slWindowManager;
 
 public class csc133Driver {
     public static void main(String[] my_args) {
-        final int FRAME_DELAY = 500;
+        final int FRAME_DELAY = 0;
 
         slRenderEngine my_re = new DCPolygonRenderer();
         slWindowManager.get().initGLFWWindow(WIN_WIDTH, WIN_HEIGHT, WINDOW_TITLE);

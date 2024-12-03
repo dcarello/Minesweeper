@@ -41,7 +41,7 @@ public class DCMouseListener {
     public static void mouseButtonCallback(long my_window, int button, int action, int mods) {
         if (action == GLFW_PRESS) {
             if (button < get().mouseButtonPressed.length) {
-                System.out.println("Pressed: " + button);
+//                System.out.println("Pressed: x: " + getX() + " y: " + getY());
                 get().mouseButtonPressed[button] = true;
             }
         } else if (action == GLFW_RELEASE) {

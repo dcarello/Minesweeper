@@ -121,7 +121,7 @@ public class MSB {
     }
 
     public void printMineBoard(){
-        for (int row = 0; row < NUM_POLY_ROWS; row++){
+        for (int row = NUM_POLY_ROWS - 1; row > -1; row--){
             for (int col = 0; col < NUM_POLY_COLS; col++){
                 if (msboard[row][col].tile_type == MINE){
                     System.out.print("M");
@@ -135,18 +135,9 @@ public class MSB {
     }
 
     public void printPointsBoard(){
-        for (int row = 0; row < NUM_POLY_ROWS; row++){
+        for (int row = NUM_POLY_ROWS - 1; row > -1; row--){
             for (int col = 0; col < NUM_POLY_COLS; col++){
                 System.out.printf("%2d ", msboard[row][col].points);
-            }
-            System.out.println();
-        }
-    }
-
-    public void printExposedBoard(){
-        for (int row = 0; row < NUM_POLY_ROWS; row++){
-            for (int col = 0; col < NUM_POLY_COLS; col++){
-                System.out.printf("%b ", msboard[row][col].EXPOSED);
             }
             System.out.println();
         }
