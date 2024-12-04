@@ -69,7 +69,7 @@ public class DCPolygonRenderer extends slRenderEngine{
                 }
 
                 // Interactive Mouse Listener
-                if (DCMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)){
+                if (DCMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1) && !board.getBoardExposed()){
                     float mx = DCMouseListener.getX();
                     float my = DCMouseListener.getY();
                     float col, row;
@@ -80,8 +80,7 @@ public class DCPolygonRenderer extends slRenderEngine{
                     if ((row > 0 && col > 0)){
                         if ((row == (int)row || row < (int)row + spaceInBetween) && (col == (int)col || col < (int)col + spaceInBetween)){
                             if ((int)row < NUM_ROWS && (int)col < NUM_COLS){
-                                System.out.println("(" + (int)col + ", " + (int)row + ")");
-                                board.setCellExposed((NUM_POLY_ROWS - 1) - (int)row, (int)col, true);
+                                board.ClickedCell((int) row, (int) col);
                                 
                             }
                         }
@@ -184,8 +183,6 @@ public class DCPolygonRenderer extends slRenderEngine{
         initializeArrays();
         initPipeline();
 
-//        FRAME_DELAY = 1000;
-
         // Set the color factor (this can be adjusted to any color you want)
         Vector4f COLOR_FACTOR = new Vector4f(1.f, 1.0f, 1.0f, 1.0f);
 
@@ -200,6 +197,7 @@ public class DCPolygonRenderer extends slRenderEngine{
         System.out.println();
 
         board.printPointsBoard();
+
 
         while (!my_wm.isGlfwWindowClosed()) {
             updateRandVerticesRandColors();
@@ -225,18 +223,15 @@ public class DCPolygonRenderer extends slRenderEngine{
 
                         // Determine the rendering condition
                         if (!board.getCellExposed(row, col)) {
-                            my_to[MYSTERY_TEXTURE].loadImageToTexture();
-                            renderTile(row, col);
-                            renderedTiles++;
+                            my_to[MYSTERY_TEXTURE].bind_texture();
                         } else if (board.getCellExposed(row, col) && !board.getCellMine(row, col)) {
-                            my_to[GOLD_TEXTURE].loadImageToTexture();
-                            renderTile(row, col);
-                            renderedTiles++;
+                            my_to[GOLD_TEXTURE].bind_texture();
                         } else {
-                            my_to[MINE_TEXTURE].loadImageToTexture();
-                            renderTile(row, col);
-                            renderedTiles++;
+                            my_to[MINE_TEXTURE].bind_texture();
                         }
+
+                        renderTile(row, col);
+                        renderedTiles++;
                     }
                 }
 

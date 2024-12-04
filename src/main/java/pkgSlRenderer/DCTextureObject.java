@@ -37,7 +37,7 @@ class DCTextureObject {
 
         STBImage.stbi_set_flip_vertically_on_load(true);
 
-//        loadImageToTexture();
+        loadImageToTexture();
     }
 
     public void bind_texture() {
