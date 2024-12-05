@@ -184,7 +184,7 @@ public class DCPolygonRenderer extends slRenderEngine{
         initPipeline();
 
         // Set the color factor (this can be adjusted to any color you want)
-        Vector4f COLOR_FACTOR = new Vector4f(1.f, 1.0f, 1.0f, 1.0f);
+        Vector4f COLOR_FACTOR = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         my_to[0] = new DCTextureObject("assets/images/MysteryBox_2.PNG");
         my_to[1] = new DCTextureObject("assets/images/ShiningDiamond_2.PNG");
@@ -193,17 +193,12 @@ public class DCPolygonRenderer extends slRenderEngine{
         startInteractiveThread(myPingPong);
 
         board.printMineBoard();
-
         System.out.println();
-
         board.printPointsBoard();
 
 
         while (!my_wm.isGlfwWindowClosed()) {
-            updateRandVerticesRandColors();
-
             glfwPollEvents();
-
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (FRAME_DELAY != 0){
@@ -211,29 +206,36 @@ public class DCPolygonRenderer extends slRenderEngine{
             }
 
             // Loop through rows and columns to draw each square
-            int renderedTiles = 0;
-            int MAX_TILES = NUM_POLY_COLS * NUM_POLY_ROWS;
-
-                for (int row = 0; row < NUM_ROWS; row++) {
-                    for (int col = 0; col < NUM_COLS; col++) {
-//                        if (renderedTiles >= MAX_TILES) break;
-
-                        // Load specific texture only once per type
-                        my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
-
-                        // Determine the rendering condition
-                        if (!board.getCellExposed(row, col)) {
-                            my_to[MYSTERY_TEXTURE].bind_texture();
-                        } else if (board.getCellExposed(row, col) && !board.getCellMine(row, col)) {
-                            my_to[GOLD_TEXTURE].bind_texture();
-                        } else {
-                            my_to[MINE_TEXTURE].bind_texture();
-                        }
-
+            for (int row = 0; row < NUM_ROWS; row++) {
+                for (int col = 0; col < NUM_COLS; col++) {
+                    my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                    // Determine the rendering condition
+                    if (!board.getCellExposed(row, col)) {
+                        my_to[MYSTERY_TEXTURE].bind_texture();
                         renderTile(row, col);
-                        renderedTiles++;
                     }
                 }
+            }
+            for (int row = 0; row < NUM_ROWS; row++) {
+                for (int col = 0; col < NUM_COLS; col++) {
+                    my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                    // Determine the rendering condition
+                    if (board.getCellExposed(row, col) && !board.getCellMine(row, col)) {
+                        my_to[GOLD_TEXTURE].bind_texture();
+                        renderTile(row, col);
+                    }
+                }
+            }
+            for (int row = 0; row < NUM_ROWS; row++) {
+                for (int col = 0; col < NUM_COLS; col++) {
+                    my_so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                    // Determine the rendering condition
+                    if (board.getCellExposed(row, col) && board.getCellMine(row, col)) {
+                        my_to[MINE_TEXTURE].bind_texture();
+                        renderTile(row, col);
+                    }
+                }
+            }
 
             my_wm.swapBuffers();
         } // while (!my_wm.isGlfwWindowClosed())

@@ -56,7 +56,7 @@ class DCTextureObject {
         texImage = stbi_load(texFilepath, texWidth, texHeight, texChannels, 0);
         if (texImage != null) {
             if (texChannels.get(0) == 4 ) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth.get(0), texHeight.get(0),
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth.get(0), texHeight.get(0),
                         0, GL_RGBA, GL_UNSIGNED_BYTE, texImage);
             } else if (texChannels.get(0) == 3) {
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth.get(0), texHeight.get(0),
