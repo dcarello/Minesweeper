@@ -2,6 +2,7 @@ package pkgSlUtils;
 
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import pkgKeyListener.DCKeyListener;
+import pkgKeyListener.DCMouseListener;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glViewport;
@@ -52,12 +53,24 @@ public class slWindowManager {
         }
     }
 
-//    public int[] getWindowSize(){
-//        glfwGetWindowSize();
-//    }
+    public int[] getWindowSize(){
+        int[] size = new int[2];
+        glfwGetWindowSize(glfw_win, size, size);
+        return size;
+    }
 
     public void updateContextToThis(){
         glfwMakeContextCurrent(glfw_win);
+    }
+
+    public void setKeyCallback(){
+        glfwSetKeyCallback(glfw_win, DCKeyListener::keyCallback);
+    }
+
+    public void setMouseCallback(){
+        glfwSetMouseButtonCallback(glfw_win, DCMouseListener::mouseButtonCallback);
+        glfwSetScrollCallback(glfw_win, DCMouseListener::mouseScrollCallback);
+        glfwSetCursorPosCallback(glfw_win, DCMouseListener::mousePosCallback);
     }
 
     private static GLFWFramebufferSizeCallback resizeWindow =
@@ -68,13 +81,10 @@ public class slWindowManager {
                 }
             };
 
+
     public void enableResizeWindowCallback() {
         glfwSetFramebufferSizeCallback(glfw_win, resizeWindow);
     } // public void enableResizeWindowCallback(...)
-
-    public void setKeyCallback(){
-        glfwSetKeyCallback(glfw_win, DCKeyListener::keyCallback);
-    }
 
 
 

@@ -3,6 +3,8 @@ package pkgSlRenderer;
 import org.lwjgl.BufferUtils;
 import pkgPingPong.DCPingPong;
 import pkgSlUtils.slWindowManager;
+
+import java.util.Arrays;
 import java.util.Random;
 import org.lwjgl.opengl.*;
 import java.nio.*;
@@ -24,6 +26,11 @@ public abstract class slRenderEngine {
     protected final slWindowManager my_wm = slWindowManager.get();
     Random my_rand = new Random();
 
+    // New Pipeline Variables
+    protected DCShaderObject my_so;
+    protected DCCamera my_c;
+    protected int vaoID, vboID;
+
     // Extended Class Functions
     public abstract void render(int FRAME_DELAY, int NUM_ROWS, int NUM_COLS);
     public abstract void render(float RADIUS);
@@ -33,37 +40,12 @@ public abstract class slRenderEngine {
 
     public void initOpenGL(int NUM_ROWS, int NUM_COLS, slWindowManager my_wm){
         my_wm.setKeyCallback();
+        my_wm.setMouseCallback();
         my_wm.updateContextToThis();
         GL.createCapabilities();
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // New Stuff
-        int FPP = 4;
-        // vertex buffer data
-        float[] my_v = new float[NUM_ROWS * NUM_COLS * FPP];
-        FloatBuffer myFB = BufferUtils.createFloatBuffer(my_v.length);
-        myFB.put(my_v).flip();
-        // vertex array
-        int vaoID = glGenVertexArrays();
-        glBindVertexArray(vaoID);
-        // vertex buffer object
-        int vboID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, myFB, GL_STATIC_DRAW);
-        // Attributes
-        int loc0 = 0, loc1 = 1, positionStride = 3, vertexStride = 5, tstride = 4;
-        glVertexAttribPointer(loc0, positionStride, GL_FLOAT, false, vertexStride, 0);
-        glVertexAttribPointer(loc1, tstride, GL_FLOAT, false, vertexStride, positionStride);
-        // Shader Object
-        DCShaderObject my_so = new DCShaderObject("assets/shaders/vs_texture_1.glsl", "assets/shaders/fs_texture_1.glsl");
-        my_so.compileShader();
-        my_so.setShaderProgram();
-        // Camera Object
-        DCCamera my_c = new DCCamera();
-        my_so.loadMatrix4f("uProjMatrix", my_c.getProjectionMatrix()); // TODO
-        my_so.loadMatrix4f("uViewMatrix", my_c.getViewMatrix()); // TODO
 
-        // End of New Stuff
 
         my_wm.enableResizeWindowCallback();
 
